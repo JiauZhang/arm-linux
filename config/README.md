@@ -1,6 +1,6 @@
 ### 安装交叉编译工具
 ```
-1.更换下载源，将source.list复制到/etc/opt下
+1.更换下载源，将source.list复制到/etc/apt下
 2.执行命令
 	sudo apt-get update
 	sudo apt-get upgrade
