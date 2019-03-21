@@ -23,84 +23,52 @@ int main()
 		if (led1_count == 0) {
 			(*(volatile int *)GPBDAT) &= nLED_1_ON;
 		}
-		if (led1_count == 2000) {
+		if (led1_count == 10000) {
 			(*(volatile int *)GPBDAT) |= ~nLED_1_ON;
 		}
-		if (led1_count == 4000) {
+		if (led1_count == 20000) {
 			led1_count = 0;
+		} else {
+			led1_count++;
 		}
 
 		if (led2_count == 0) {
 			(*(volatile int *)GPBDAT) |= ~nLED_2_ON;
 		}
-		if (led2_count == 20000) {
+		if (led2_count == 50000) {
 			(*(volatile int *)GPBDAT) &= nLED_2_ON;
 		}
-		if (led2_count == 40000) {
+		if (led2_count == 100000) {
 			led2_count = 0;
+		} else {
+			led2_count++;
 		}
 
 		if (led3_count == 0) {
 			(*(volatile int *)GPBDAT) |= ~nLED_3_ON;
 		}
-		if (led3_count == 200000) {
+		if (led3_count == 100000) {
 			(*(volatile int *)GPBDAT) &= nLED_3_ON;
 		}
-		if (led3_count == 400000) {
+		if (led3_count == 200000) {
 			led3_count = 0;
+		} else {
+			led3_count++;
 		}
 
 		if (led4_count == 0) {
 			(*(volatile int *)GPBDAT) |= ~nLED_4_ON;
 			//delay(50);
 		}
-		if (led4_count == 20000000) {
+		if (led4_count == 200000) {
 			(*(volatile int *)GPBDAT) &= nLED_4_ON;
 			//delay(100);
 		}
-		 if (led4_count == 40000000) {
-                        led4_count = 0;
-                }
-
-
-		led1_count++;
-		led2_count++;
-		led3_count++;
-		led4_count++;
-		/*
-		if (count == 2000) {
-			(*(volatile int *)GPBDAT) &= nLED_2_ON;
-			(*(volatile int *)GPBDAT) |= ~nLED_1_ON;
+		if (led4_count == 400000) {
+			led4_count = 0;
+		} else {
+			led4_count++;
 		}
-
-		if (count == 2000) {
-			(*(volatile int *)GPBDAT) &= nLED_3_ON;
-			(*(volatile int *)GPBDAT) |= ~nLED_2_ON;
-		}
-
-		if (count == 2000) {
-			(*(volatile int *)GPBDAT) &= nLED_4_ON;
-			(*(volatile int *)GPBDAT) |= ~nLED_3_ON;
-		}
-
-		count++;
-
-		if (count > 2000) {
-			count = 0;
-		}
-		*/
-		/*
-		count++;
-
-		if (count == 1000000000)
-			count = 1;
-
-		(*(volatile int *)GPBDAT) &= LEDS_ON;
-		delay(count);
-		(*(volatile int *)GPBDAT) |= ~LEDS_ON;
-		delay(count);
-		*/
-
 	}
 }
 

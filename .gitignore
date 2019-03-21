@@ -1,7 +1,8 @@
 # Prerequisites
 *.d
 *.bin
-*elf
+*.elf
+*.dis
 
 # Object files
 *.o

@@ -2,7 +2,7 @@
   FileVersion = 2
 [GENERAL]
   ConnectMode = 0
-  CurrentFile = "D:\arm-linux\src\led\led_on.bin"
+  CurrentFile = "D:\arm-linux\src\clock\clock_12MHz.bin"
   DataFileSAddr = 0x00000000
   GUIMode = 0
   HostName = ""
