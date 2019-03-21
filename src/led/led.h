@@ -1,6 +1,6 @@
 
-#define GPBCON 0x56000010
-#define GPBDAT 0x56000014
+#define GPBCON (*(volatile int *)0x56000010)
+#define GPBDAT (*(volatile int *)0x56000014)
 
 #define GPB5 (1<<(5*2))
 #define GPB6 (1<<(6*2))
