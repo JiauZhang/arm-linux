@@ -26,14 +26,69 @@ void uart0_init()
 
 }
 
-int putchar(int c)
+int putchar(unsigned char c)
 {
 	/* UTRSTAT0 */
 	/* UTXH0 */
 
 	while (!(UTRSTAT0 & (1<<2)));
-	UTXH0 = (unsigned char)c;
+	UTXH0 = c;
 	return 0;
+}
+
+void putint(int num)
+{
+	if (num<0) {
+		putchar('-');
+		num = -num;
+	}
+	
+	if (num>=0 && num<=9) {
+		putchar('0'+num);
+	} else {
+		char nums[10];
+		int i = 0;
+		
+		for (; i<10; i++) {
+			nums[i] = 'f';
+		}
+		
+		i = 0;
+		while (num) {
+			nums[i++] = num % 10;
+			num = num /10;
+		}
+		
+		i--;
+		for (; i>=0; i--) {
+			putchar('0'+nums[i]);
+		}
+	}	
+}
+
+void putuint(unsigned int num)
+{
+	if (num>=0 && num<=9) {
+		putchar('0'+num);
+	} else {
+		char nums[10];
+		int i = 0;
+		
+		for (; i<10; i++) {
+			nums[i] = 'f';
+		}
+		
+		i = 0;
+		while (num) {
+			nums[i++] = num % 10;
+			num = num /10;
+		}
+		
+		i--;
+		for (; i>=0; i--) {
+			putchar('0'+nums[i]);
+		}
+	}	
 }
 
 int getchar(void)
@@ -74,22 +129,5 @@ void printHex(unsigned int val)
 		else if(arr[i] >= 0xA && arr[i] <= 0xF)
 			putchar(arr[i] - 0xA + 'A');
 	}
-}
-
-void print1(void)
-{
-	puts("abc\n\r");
-}
-
-void print2(void)
-{
-	puts("123\n\r");
-}
-
-void printSWIVal(unsigned int *pSWI)
-{
-	puts("SWI val = ");
-	printHex(*pSWI & ~0xff000000);
-	puts("\n\r");
 }
 
