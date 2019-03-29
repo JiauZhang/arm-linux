@@ -1,0 +1,51 @@
+1.
+*** Unable to find the ncurses libraries or the
+ *** required header files.
+ *** 'make menuconfig' requires the ncurses libraries.
+ ***
+ *** Install ncurses (ncurses-devel) and try again.
+ ***
+
+2.
+linux@DESKTOP-UT7MVRC:/mnt/f/Mini2440-2014010/linux/linux-2.6.32.2$ sudo apt-get install ncurses
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+E: Unable to locate package ncurses
+安装命令：sudo apt-get install libncurses-dev
+
+3.
+修改Makefile中的交叉CROSS_COMPILE的值
+
+4.
+fatal error: linux/compiler-gcc7.h: No such file or directory
+ #include gcc_header(__GNUC__)
+ ^~~~
+compilation terminated.
+/mnt/f/Mini2440-2014010/linux/linux-2.6.32.2/./Kbuild:35: recipe for target 'kernel/bounds.s' failed
+make[1]: *** [kernel/bounds.s] Error 1
+Makefile:982: recipe for target 'prepare0' failed
+解决办法：
+cp include/linux/compiler-gcc4.h include/linux/compiler-gcc7.h
+
+5.
+init/mounts.o: In function `tty_port_users':
+do_mounts.c:(.text+0x0): multiple definition of `tty_port_users'
+init/main.o:main.c:(.text+0x0): first defined here
+scripts/Makefile.build:297: recipe for target 'init/built-in.o' failed
+make[1]: *** [init/built-in.o] Error 1
+将原函数extern修改成static
+
+6.
+  CC      kernel/itimer.o
+  TIMEC   kernel/timeconst.h
+Can't use 'defined(@array)' (Maybe you should just omit the defined()?) at kernel/timeconst.pl line 373.
+/mnt/f/Mini2440-2014010/linux/linux-2.6.32.2/kernel/Makefile:129: recipe for target 'kernel/timeconst.h' failed
+make[1]: *** [kernel/timeconst.h] Error 255
+打开 kernel/timeconst.pl
+@val = @{$canned_values{$hz}};
+if (!defined(@val)) {
+@val = compute_values($hz);
+}
+output($hz, @val);
+将if (!defined(@val)) 改为if (!(@val))，再次编译就可以通过了。
