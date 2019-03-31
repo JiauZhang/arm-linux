@@ -1,0 +1,28 @@
+arm-linux-gcc -v
+arm-linux-gcc: 15: exec: .arm-none-linux-gnueabi-gcc: Exec format error
+
+sudo dpkg --add-architecture i386
+[sudo] password for linux:
+sudo apt install libc6:i386
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+Package libc6:i386 is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+However the following packages replace it:
+  libdb1-compat tzdata
+E: Package 'libc6:i386' has no installation candidate
+
+sudo apt-get install ia32-libs
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+Package ia32-libs is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+However the following packages replace it:
+  lib32ncurses5 lib32z1
+E: Package 'ia32-libs' has no installation candidate
+
+依旧不能用........放弃在wsl中开发的幻想.........
