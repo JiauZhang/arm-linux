@@ -1,0 +1,8 @@
+1.
+Installing bootloader  succeed
+Installing kernel...
+Installing kernel failed
+
+错误原因：USB下载驱动没有安装，且手动安装也失败！
+
+解决方法：关闭win10强制数字签名

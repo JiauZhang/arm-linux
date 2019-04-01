@@ -1,5 +1,0 @@
-1.
-Installing bootloader  succeed
-Installing kernel...
-Installing kernel failed
-解决方法：关闭win10强制数字签名
