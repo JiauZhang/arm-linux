@@ -1,0 +1,3 @@
+使用menuconfig关闭蓝牙编译部分:
+Networking support
+	-> Bluetooth subsystem support (N)

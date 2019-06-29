@@ -63,4 +63,28 @@ MODULE_LICENSE("GPL")
 ### 初始化和关闭
 初始化和退出函数应该被声明为static，因为这种函数在特定文件之外没有其他意义；可以在这两个函数前适当的加 **__init** 和 **__exit**。
 ### 模块参数
+内核允许对驱动程序指定参数，而这些参数可在装载驱动程序模块时改变。这些参数的值可在运行insmode或modprob命令时赋值，
+而**modprob**还可以从它的配置文件(/etc/modprob.conf)中读取参数值。参数必须使用**module_param**宏来声明，这个宏在**moduleparam.h**
+中定义。module_param需要三个参数：变量名、类型以及sysfs入口项的访问许可掩码。这个宏必须放在任何函数之外，通常是在源文件的头部。
+```c
+static char *whom = "world";
+static int howmany = 1;
+/* S_IRUGO表示任何人可读取该参数，但不能修改 
+ * S_IRUGO | S_IWUSR表示允许root用户修改该参数
+ */
+module_param(howman, int, S_IRUGO);
+module_param(whom, charp, S_IRUGO);
+/* 命令行调用示例：
+ * insmode module_name howmany=10 whom="Mom"
+ */
+```
+内核支持的模块参数类型如下：
+```c
+bool invbool charp int long short uint ulong ushort
+```
+模块装载器也支持数组参数，在提供数组值时用逗号划分各数组成员，使用如下宏：
+```c
+/* 数组名称--数组元素类型--整数变量--访问许可值 */
+module_param(name, type, num, perm);
+```
 ### 在用户空间编写驱动程序

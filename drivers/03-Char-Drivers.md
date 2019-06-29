@@ -1,6 +1,6 @@
 ### 主设备号和次设备号
 对字符设备的访问是通过文件系统内的设备名称进行的，这些名称被称为特殊文件、设备文件，或者简单的称之为文件系统树的节点，
-它们通常位于**//dev**目录下。通常而言，主设备号标示设备对应的驱动程序。现代的Linux内核允许多个驱动程序共享主设备号，
+它们通常位于**dev**目录下。通常而言，主设备号标示设备对应的驱动程序。现代的Linux内核允许多个驱动程序共享主设备号，
 但大多数设备仍然按照**一个主设备号对应一个驱动程序**的原则组织。
 
 次设备号由内核使用，用于正确确定设备文件所指的设备。
@@ -56,4 +56,16 @@ struct file_operations fops = {
 ```c
 unsigned int iminor(struct inode *inode);
 unsigned int imajor(struct inode *inode);
+```
+### 字符设备的注册
+内核内部使用**struct cdev**结构来表示字符设备
+```c
+#inlcude <linux/cdev.h>
+/* 运行时获取一个cdev结构体 */
+struct cdev *my_cdev = cdev_alloc();
+mv_cdev->ops = &my_fops;
+/* 告诉内核该结构体的信息，该函数可能会失败，注意返回值检查 */
+int cdev_add(struct cdev *dev, dev_t num, unsigned int count);
+/* 从系统中移除一个字符设备 */
+void cdev_del(struct cdev *dev);
 ```
