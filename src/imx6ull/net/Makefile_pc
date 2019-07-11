@@ -1,0 +1,19 @@
+EXEC = tcp_server_pc tcp_client_pc
+OBJS = tcp_server_pc.o tcp_client_pc.o
+SRC  = src/tcp_server.c src/tcp_clinet.c
+
+#CC = arm-linux-gnueabihf-gcc
+CC = gcc
+CFLAGS += -O2 -Wall
+LDFLAGS += 
+
+all:$(EXEC)
+
+tcp_%_pc:tcp_%_pc.o
+	$(CC) $(LDFLAGS) -o $@ $^ -pthread
+
+%_pc.o:src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@ -pthread
+
+clean:
+	@rm -vf $(EXEC) *.o *~
