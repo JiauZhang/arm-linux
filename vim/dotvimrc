@@ -1,0 +1,118 @@
+"---------------------------------------------------------"
+"set vim environment variable
+"---------------------------------------------------------"
+" line number
+set nu 
+" auto ident
+set ai 
+" set autoindent equals to 4 spaces
+set softtabstop=4
+set shiftwidth=4
+set noexpandtab
+" background color
+set bg=light
+" display completion matches in a status line
+set wildmenu
+" while typing a search comman, show where patter
+" as it was typed so far, matches
+" set incsearch
+" enable mouse
+if has('mouse')
+    set mouse=a
+endif
+"---------------------------------------------------------"
+" end set vim environment variable
+"---------------------------------------------------------"
+
+"---------------------------------------------------------"
+" set key map
+"---------------------------------------------------------"
+
+
+"---------------------------------------------------------"
+" set plugin
+"---------------------------------------------------------"
+"---------------------------------------------------------"
+" set vim-plugin
+" Specify a directory for plugins
+" - For Neovim: stdpath('data') . '/plugged'
+" - Avoid using standard Vim directory names like 'plugin'
+"---------------------------------------------------------"
+call plug#begin('~/.vim/plugged')
+
+"---------------------------------------------------------"
+" how to install or uninstall plugin
+"---------------------------------------------------------"
+" install:
+" step 1:
+"   Plug 'plugin link'
+" step 2:
+"   :w and source ~/.vimrc
+" step 3:
+"   :PlugInstall
+" uninstall:
+" step 1:
+"   comment the Plug 'plugin link'you want to uninsatll
+" step 2:
+"   :w and source ~/.vimrc
+" step 3:
+"   :PlugClean
+"---------------------------------------------------------"
+" directory tree
+Plug 'scrooloose/nerdtree'
+" source explorer
+Plug 'wesleyche/SrcExpl'
+" source code browser, it read tag file created by ctags
+Plug 'vim-scripts/taglist.vim'
+" for intensely orgasmic commenting
+Plug 'scrooloose/nerdcommenter'
+" draw a nice statusline at the bottom of each window
+Plug 'vim-airline/vim-airline'
+" color theme
+Plug 'NLKNguyen/papercolor-theme'
+" code completion engine for vim
+" you have to install it manually in it's directory
+" Plug 'ycm-core/YouCompleteMe'
+
+" Initialize plugin system
+call plug#end()
+"---------------------------------------------------------"
+" end plugin
+"---------------------------------------------------------"
+
+
+"---------------------------------------------------------"
+" set papercolor-theme
+"---------------------------------------------------------"
+set background=dark
+colorscheme PaperColor
+
+"---------------------------------------------------------"
+" set source explorer
+"---------------------------------------------------------"
+nmap <F8> :SrcExplToggle<CR>
+nmap <C-H> <C-W>h
+nmap <C-J> <C-W>j
+nmap <C-K> <C-W>k
+nmap <C-L> <C-W>l
+
+let g:SrcExpl_winHeight = 8
+let g:SrcExpl_refreshTime = 100
+let g:SrcExpl_jumpKey = "<ENTER>"
+let g:SrcExpl_gobackKey = "<SPACE>"
+let g:SrcExpl_isUpdateTags = 0
+
+"---------------------------------------------------------"
+" set taglist
+"---------------------------------------------------------"
+nmap <F7> :TlistToggle<CR>
+let Tlist_Inc_Winwidth = 0
+let Tlist_Exit_OnlyWindow = 0
+let Tlist_Auto_Open = 0
+let Tlist_Use_Right_Window = 1
+
+"---------------------------------------------------------"
+" set nerd tree
+"---------------------------------------------------------"
+let NERDTreeWinPos = "left"
+nmap <F9> :NERDTreeToggle<CR>
