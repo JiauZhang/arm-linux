@@ -1,0 +1,15 @@
+#
+# Generated files
+#
+config*
+*.pot
+*.mo
+
+#
+# configuration programs
+#
+conf
+mconf
+qconf
+gconf
+kxgettext

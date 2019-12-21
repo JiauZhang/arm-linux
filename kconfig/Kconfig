@@ -1,0 +1,12 @@
+mainmenu "Kconfig Tutorial"
+
+menu TEST
+
+config TEST_1
+    def_bool y
+config TEST_2
+    def_tristate m
+config TEST_3
+    def_tristate n
+
+endmenu
