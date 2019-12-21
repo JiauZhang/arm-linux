@@ -1,21 +1,47 @@
-"---------------------------------------------------------"
+"---------------------------------------------------------"t
 "set vim environment variable
 "---------------------------------------------------------"
 " line number
 set nu 
+
 " auto ident
 set ai 
+
 " set autoindent equals to 4 spaces
+set tabstop=4
 set softtabstop=4
 set shiftwidth=4
 set noexpandtab
+
 " background color
-set bg=light
+" set bg=light
+
 " display completion matches in a status line
 set wildmenu
+
 " while typing a search comman, show where patter
 " as it was typed so far, matches
 " set incsearch
+
+" resize window
+map <up> :res -5<CR>
+map <down> :res +5<CR>
+map <left> :vertical resize+5<CR>
+map <right> :vertical resize-5<CR>
+ 
+" keyboard remap
+map S :w<CR>
+map s <nop>
+map R :source $MYVIMRC<CR>
+map Q :q<CR>
+imap <C-I> <Esc>
+
+" split window
+map sl :set splitright<CR>:vsplit<CR>
+map sh :set nosplitright<CR>:vsplit<CR>
+map sj :set splitbelow<CR>:split<CR>
+map sk :set nosplitbelow<CR>:split<CR>
+
 " enable mouse
 if has('mouse')
     set mouse=a
@@ -68,8 +94,10 @@ Plug 'vim-scripts/taglist.vim'
 Plug 'scrooloose/nerdcommenter'
 " draw a nice statusline at the bottom of each window
 Plug 'vim-airline/vim-airline'
+" vim-airline theme
+Plug 'vim-airline/vim-airline-themes'
 " color theme
-Plug 'NLKNguyen/papercolor-theme'
+" Plug 'NLKNguyen/papercolor-theme'
 " code completion engine for vim
 " you have to install it manually in it's directory
 " Plug 'ycm-core/YouCompleteMe'
@@ -84,8 +112,9 @@ call plug#end()
 "---------------------------------------------------------"
 " set papercolor-theme
 "---------------------------------------------------------"
-set background=dark
-colorscheme PaperColor
+" set background=light
+" let g:airline_theme='papercolor'
+" colorscheme PaperColor
 
 "---------------------------------------------------------"
 " set source explorer
