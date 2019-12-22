@@ -6,13 +6,11 @@ set nu
 
 " auto ident
 set ai 
-
 " set autoindent equals to 4 spaces
 set tabstop=4
 set softtabstop=4
 set shiftwidth=4
 set noexpandtab
-
 " background color
 " set bg=light
 
@@ -24,24 +22,11 @@ set wildmenu
 " set incsearch
 
 " resize window
-map <up> :res -5<CR>
-map <down> :res +5<CR>
+map <up> :res +5<CR>
+map <down> :res -5<CR>
 map <left> :vertical resize+5<CR>
 map <right> :vertical resize-5<CR>
  
-" keyboard remap
-map S :w<CR>
-map s <nop>
-map R :source $MYVIMRC<CR>
-map Q :q<CR>
-imap <C-I> <Esc>
-
-" split window
-map sl :set splitright<CR>:vsplit<CR>
-map sh :set nosplitright<CR>:vsplit<CR>
-map sj :set splitbelow<CR>:split<CR>
-map sk :set nosplitbelow<CR>:split<CR>
-
 " enable mouse
 if has('mouse')
     set mouse=a
@@ -53,6 +38,60 @@ endif
 "---------------------------------------------------------"
 " set key map
 "---------------------------------------------------------"
+" keyboard remap
+map S :w<CR>
+map s <nop>
+map R :source $MYVIMRC<CR>
+map Q :q<CR>
+imap <C-N> <Esc>
+
+" split window
+map sl :set splitright<CR>:vnew<CR>
+map sh :set nosplitright<CR>:vnew<CR>
+map sj :set splitbelow<CR>:new<CR>
+map sk :set nosplitbelow<CR>:new<CR>
+
+" new tab page
+map tp :tabnew<CR>
+map tl :tabnext<CR>
+map th :tabprevious<CR>
+map <tab> :tabnext<CR>
+map <S-tab> :tabprevious<CR>
+
+" toggle cursor between windows 
+nmap <C-H> <C-W>h
+nmap <C-J> <C-W>j
+nmap <C-K> <C-W>k
+nmap <C-L> <C-W>l
+
+" rotate window
+
+
+"---------------------------------------------------------"
+" ctags database path
+"---------------------------------------------------------"
+" set tags=./tags, tags
+
+"---------------------------------------------------------"
+" cscope database path
+"---------------------------------------------------------"
+set csto=0
+set cst
+set nocsverb
+if has("cscope")
+    set csprg=/usr/bin/cscope
+	set csto=0
+	set cst
+	set nocsverb
+	" add any database in current directory
+	if filereadable("cscope.out")
+	    cs add cscope.out
+	" else add database pointed to by environment
+	elseif $CSCOPE_DB != ""
+	    cs add $CSCOPE_DB
+	endif
+	set csverb
+endif
 
 
 "---------------------------------------------------------"
@@ -95,7 +134,7 @@ Plug 'scrooloose/nerdcommenter'
 " draw a nice statusline at the bottom of each window
 Plug 'vim-airline/vim-airline'
 " vim-airline theme
-Plug 'vim-airline/vim-airline-themes'
+" Plug 'vim-airline/vim-airline-themes'
 " color theme
 " Plug 'NLKNguyen/papercolor-theme'
 " code completion engine for vim
@@ -120,10 +159,6 @@ call plug#end()
 " set source explorer
 "---------------------------------------------------------"
 nmap <F8> :SrcExplToggle<CR>
-nmap <C-H> <C-W>h
-nmap <C-J> <C-W>j
-nmap <C-K> <C-W>k
-nmap <C-L> <C-W>l
 
 let g:SrcExpl_winHeight = 8
 let g:SrcExpl_refreshTime = 100
