@@ -1,8 +1,23 @@
 "---------------------------------------------------------"t
 "set vim environment variable
 "---------------------------------------------------------"
+set nocompatible
+set cursorline
+
+" vsplit line type
+highlight VertSplit ctermbg=100 ctermfg=100
+set fillchars=vert:\|
+
+if has('syntax')
+	syntax on
+endif
+
 " line number
 set nu 
+set relativenumber
+
+" status line
+set statusline=%<%f\ %h%m%r%=%-14.(%l,%c%V,%L%)\ %P
 
 " auto ident
 set ai 
@@ -12,7 +27,7 @@ set softtabstop=4
 set shiftwidth=4
 set noexpandtab
 " background color
-" set bg=light
+set background=light
 
 " display completion matches in a status line
 set wildmenu
@@ -21,11 +36,6 @@ set wildmenu
 " as it was typed so far, matches
 " set incsearch
 
-" resize window
-map <up> :res +5<CR>
-map <down> :res -5<CR>
-map <left> :vertical resize+5<CR>
-map <right> :vertical resize-5<CR>
  
 " enable mouse
 if has('mouse')
@@ -59,13 +69,19 @@ map <tab> :tabnext<CR>
 map <S-tab> :tabprevious<CR>
 
 " toggle cursor between windows 
-nmap <C-H> <C-W>h
-nmap <C-J> <C-W>j
-nmap <C-K> <C-W>k
-nmap <C-L> <C-W>l
+map <C-H> <C-W>h
+map <C-J> <C-W>j
+map <C-K> <C-W>k
+map <C-L> <C-W>l
+
+" resize window
+map <up> :res +4<CR>
+map <down> :res -4<CR>
+map <left> :vertical resize+4<CR>
+map <right> :vertical resize-4<CR>
 
 " rotate window
-
+" map <A-H> :res +4<CR>
 
 "---------------------------------------------------------"
 " ctags database path
@@ -125,18 +141,28 @@ call plug#begin('~/.vim/plugged')
 "---------------------------------------------------------"
 " directory tree
 Plug 'scrooloose/nerdtree'
+
 " source explorer
 Plug 'wesleyche/SrcExpl'
+
 " source code browser, it read tag file created by ctags
-Plug 'vim-scripts/taglist.vim'
+" Plug 'vim-scripts/taglist.vim'
+
+" displays tags in a window, ordered by scope
+Plug 'majutsushi/tagbar'
+
 " for intensely orgasmic commenting
 Plug 'scrooloose/nerdcommenter'
+
 " draw a nice statusline at the bottom of each window
-Plug 'vim-airline/vim-airline'
+" Plug 'vim-airline/vim-airline'
+
 " vim-airline theme
 " Plug 'vim-airline/vim-airline-themes'
+
 " color theme
 " Plug 'NLKNguyen/papercolor-theme'
+
 " code completion engine for vim
 " you have to install it manually in it's directory
 " Plug 'ycm-core/YouCompleteMe'
@@ -149,17 +175,13 @@ call plug#end()
 
 
 "---------------------------------------------------------"
-" set papercolor-theme
+" set vim-airline
 "---------------------------------------------------------"
-" set background=light
-" let g:airline_theme='papercolor'
-" colorscheme PaperColor
 
 "---------------------------------------------------------"
 " set source explorer
 "---------------------------------------------------------"
 nmap <F8> :SrcExplToggle<CR>
-
 let g:SrcExpl_winHeight = 8
 let g:SrcExpl_refreshTime = 100
 let g:SrcExpl_jumpKey = "<ENTER>"
@@ -167,13 +189,18 @@ let g:SrcExpl_gobackKey = "<SPACE>"
 let g:SrcExpl_isUpdateTags = 0
 
 "---------------------------------------------------------"
-" set taglist
+" set taglist --- deprecated
+" nmap <F7> :TlistToggle<CR>
+" let Tlist_Inc_Winwidth = 0
+" let Tlist_Exit_OnlyWindow = 0
+" let Tlist_Auto_Open = 0
+" let Tlist_Use_Right_Window = 1
 "---------------------------------------------------------"
-nmap <F7> :TlistToggle<CR>
-let Tlist_Inc_Winwidth = 0
-let Tlist_Exit_OnlyWindow = 0
-let Tlist_Auto_Open = 0
-let Tlist_Use_Right_Window = 1
+
+"---------------------------------------------------------"
+" set tagbar
+"---------------------------------------------------------"
+nmap <F7> :TagbarToggle<CR>
 
 "---------------------------------------------------------"
 " set nerd tree
