@@ -1,12 +1,65 @@
 mainmenu "Kconfig Tutorial"
 
-menu TEST
+config START_MENU_1
+	bool 
+	default y
+
+config TEST
+	def_bool y
+	prompt "TEST"
+
+menu "MENU_1"
+	depends on START_MENU_1
 
 config TEST_1
-    def_bool y
+    def_bool n
 config TEST_2
     def_tristate m
 config TEST_3
     def_tristate n
+
+config TEST_4
+	bool "TEST_4"
+	help
+		this is the help message for TEST_4
+
+config TEST_5
+	bool
+	depends on TEST_1 
+	prompt "TEST_5 depends on TEST_1"
+	help
+		this is the help message for TEST_5
+
+config TEST_6
+	bool
+	depends on TEST_1 || TEST_2
+	prompt "TEST_6 depends on TEST_1 || TEST_2"
+	help
+		this is the help message for TEST_6
+
+config TEST_7
+	bool
+	depends on TEST_4 && TEST_2
+	prompt "TEST_7 depends on TEST_4 && TEST_2"
+	help
+		this is the help message for TEST_7
+
+config TEST_8
+	def_bool y
+	depends on TEST_2
+	prompt "TEST_8 depends on TEST_2" 
+
+config TEST_9
+	tristate "TEST_9 select TEST_1"
+	select TEST_1
+	help
+		TEST_9 select TEST_1
+
+endmenu
+
+menu "MENU_2"
+
+config TEST_10
+	bool "TEST_10"
 
 endmenu
