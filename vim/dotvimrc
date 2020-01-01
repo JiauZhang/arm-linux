@@ -1,4 +1,4 @@
-"---------------------------------------------------------"t
+"---------------------------------------------------------"
 "set vim environment variable
 "---------------------------------------------------------"
 set nocompatible
@@ -22,9 +22,9 @@ set statusline=%<%f\ %h%m%r%=%-14.(%l,%c%V,%L%)\ %P
 " auto ident
 set ai 
 " set autoindent equals to 4 spaces
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
+set tabstop=8
+set softtabstop=8
+set shiftwidth=8
 set noexpandtab
 " background color
 set background=light
@@ -39,7 +39,7 @@ set wildmenu
  
 " enable mouse
 if has('mouse')
-    set mouse=a
+	set mouse=a
 endif
 "---------------------------------------------------------"
 " end set vim environment variable
@@ -95,24 +95,30 @@ set csto=0
 set cst
 set nocsverb
 if has("cscope")
-    set csprg=/usr/bin/cscope
+	set csprg=/usr/bin/cscope
 	set csto=0
 	set cst
 	set nocsverb
 	" add any database in current directory
 	if filereadable("cscope.out")
-	    cs add cscope.out
+		cs add cscope.out
 	" else add database pointed to by environment
 	elseif $CSCOPE_DB != ""
-	    cs add $CSCOPE_DB
+		cs add $CSCOPE_DB
 	endif
 	set csverb
 endif
 
 
 "---------------------------------------------------------"
-" set plugin
+" auto install vim- plug
 "---------------------------------------------------------"
+if empty(glob('~/.vim/autoload/plug.vim'))
+	!curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+		\ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+endif
+
+
 "---------------------------------------------------------"
 " set vim-plugin
 " Specify a directory for plugins
