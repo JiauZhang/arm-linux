@@ -1,0 +1,37 @@
+$ make zImage
+
+错误1：
+  CHK     include/linux/version.h
+make[1]: 'include/asm-arm/mach-types.h' is up to date.
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-arm
+  CC      kernel/bounds.s
+.arm-none-linux-gnueabi-gcc: error trying to exec 'cc1': execvp: No such file or directory
+/mnt/f/Mini2440-2014010/linux/linux-2.6.32.2/./Kbuild:35: recipe for target 'kernel/bounds.s' failed
+make[1]: *** [kernel/bounds.s] Error 1
+Makefile:982: recipe for target 'prepare0' failed
+make: *** [prepare0] Error 2
+解决办法：直接将交叉工具链中的libexec路径添加到环境变量
+
+错误2：
+  CHK     include/linux/version.h
+make[1]: 'include/asm-arm/mach-types.h' is up to date.
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-arm
+  CC      kernel/bounds.s
+cc1: error: /opt/FriendlyARM/toolschain/4.4.3/lib/gcc/arm-none-linux-gnueabi/4.4.3/include: Value too large for defined data type
+cc1: error: include: Value too large for defined data type
+cc1: error: /mnt/f/Mini2440-2014010/linux/linux-2.6.32.2/arch/arm/include: Value too large for defined data type
+cc1: error: arch/arm/mach-s3c2410/include: Value too large for defined data type
+cc1: error: arch/arm/mach-s3c2400/include: Value too large for defined data type
+cc1: error: arch/arm/mach-s3c2442/include: Value too large for defined data type
+cc1: error: arch/arm/plat-s3c24xx/include: Value too large for defined data type
+cc1: error: arch/arm/plat-s3c/include: Value too large for defined data type
+cc1: error: kernel/bounds.c: Value too large for defined data type
+/mnt/f/Mini2440-2014010/linux/linux-2.6.32.2/./Kbuild:35: recipe for target 'kernel/bounds.s' failed
+make[1]: *** [kernel/bounds.s] Error 1
+Makefile:982: recipe for target 'prepare0' failed
+make: *** [prepare0] Error 2
+错误原因：可能是因为32位编译器和64位系统 inode 不一致造成的，虽然wsl上可以运行32位
+交叉编译工具，但编译还是无法通过！
+
