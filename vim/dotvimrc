@@ -75,10 +75,14 @@ map <C-K> <C-W>k
 map <C-L> <C-W>l
 
 " resize window
-map <up> :res +4<CR>
-map <down> :res -4<CR>
-map <left> :vertical resize+4<CR>
-map <right> :vertical resize-4<CR>
+" map <up> :res +4<CR>
+" map <down> :res -4<CR>
+" map <left> :vertical resize+4<CR>
+" map <right> :vertical resize-4<CR>
+map <S-j> :res -4<CR>
+map <S-k> :res +4<CR>
+map <S-l> :vertical resize+4<CR>
+map <S-h> :vertical resize-4<CR>
 
 " rotate window
 " map <A-H> :res +4<CR>
