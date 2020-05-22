@@ -50,7 +50,14 @@ ENTRY(stext)
 	adr	r3, 2f				@ r3=运行地址
 	ldmia	r3, {r4, r8}	@ r4=链接地址、r8=页偏移
 	sub	r4, r3, r4			@ 运行地址与链接地址间的差值
-	add	r8, r8, r4			@ 修正页偏移
+	/*
+	 * 内核被解压到 物理地址+text_offset 处，即 0x40008000，也是当前的运行地址
+	 * 而内核在编译时被链接到 page_offset+text_offset 处，即 0xc0008000
+	 * 因此 r4=r3-r4 记录的是内核实际存放的物理地址和运行时的虚拟地址间的偏移
+	 * 即 r4=phys-page_offset
+	 * 所以 r8 = r4+r8 = phys-page_offset+page_offset = phys，即物理地址的起始地址
+	 */
+	add	r8, r8, r4			@ 修正页偏移(虚拟地址或链接地址)
 #else
 	ldr	r8, =PHYS_OFFSET	@ always constant in this case
 #endif
@@ -112,26 +119,20 @@ bl	__vet_atags
 #endif
 	bl	__create_page_tables
 	|	
-	|-->/*
-	|	 * Setup the initial page tables.  We only setup the barest
-	|	 * amount which are required to get the kernel running, which
-	|	 * generally means mapping in the kernel code.
-	|	 *
-	|	 * r8 = phys_offset, r9 = cpuid, r10 = procinfo
+	|-->/* r8 = phys_offset, r9 = cpuid, r10 = procinfo
 	|	 *
 	|	 * Returns:
 	|	 *  r0, r3, r5-r7 corrupted
 	|	 *  r4 = physical page table address
 	|	 */
 	|	__create_page_tables:
-	|		pgtbl	r4, r8				@ page table address
+	|		pgtbl	r4, r8				@ 将页表起始物理地址放入 r4 中
 	|			|
 	|			|-->.macro	pgtbl, rd, phys
 	|			|	add	\rd, \phys, #TEXT_OFFSET - PG_DIR_SIZE
 	|			|	.endm
-	|		/*
-	|		 * Clear the swapper page table
-	|		 */
+	|
+	|		@ 对页表区域进行清零
 	|		mov	r0, r4
 	|		mov	r3, #0
 	|		add	r6, r0, #PG_DIR_SIZE
@@ -141,6 +142,37 @@ bl	__vet_atags
 	|		str	r3, [r0], #4
 	|		teq	r0, r6
 	|		bne	1b
+	|
+	|		ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
+	|
+	|		@ 传建临时的线性映射
+	|		adr	r0, __turn_mmu_on_loc
+	|		ldmia	r0, {r3, r5, r6}
+	|		sub	r0, r0, r3			@ virt->phys offset
+	|		add	r5, r5, r0			@ phys __turn_mmu_on
+	|		add	r6, r6, r0			@ phys __turn_mmu_on_end
+	|		mov	r5, r5, lsr #SECTION_SHIFT
+	|		mov	r6, r6, lsr #SECTION_SHIFT
+	|
+	|	1:	orr	r3, r7, r5, lsl #SECTION_SHIFT	@ flags + kernel base
+	|		str	r3, [r4, r5, lsl #PMD_ORDER]	@ identity mapping
+	|		cmp	r5, r6
+	|		addlo	r5, r5, #1			@ next section
+	|		blo	1b
+	|
+	|		@ 设置映射页表
+	|		mov	r3, pc
+	|		mov	r3, r3, lsr #SECTION_SHIFT
+	|		orr	r3, r7, r3, lsl #SECTION_SHIFT
+	|		add	r0, r4,  #(KERNEL_START & 0xff000000) >> (SECTION_SHIFT - PMD_ORDER)
+	|		str	r3, [r0, #((KERNEL_START & 0x00f00000) >> SECTION_SHIFT) << PMD_ORDER]!
+	|		ldr	r6, =(KERNEL_END - 1)
+	|		add	r0, r0, #1 << PMD_ORDER
+	|		add	r6, r4, r6, lsr #(SECTION_SHIFT - PMD_ORDER)
+	|	1:	cmp	r0, r6
+	|		add	r3, r3, #1 << SECTION_SHIFT
+	|		strls	r3, [r0], #1 << PMD_ORDER
+	|		bls	1b
 
 	/*
 	 * The following calls CPU specific code in a position independent
@@ -157,4 +189,10 @@ bl	__vet_atags
  THUMB(	add	r12, r10, #PROCINFO_INITFUNC	)
  THUMB(	mov	pc, r12				)
 1:	b	__enable_mmu
+```
+
+### 关键宏定义
+```c
+::arch/arm/kernel/vmlinux.ld.S
+. = PAGE_OFFSET + TEXT_OFFSET
 ```
