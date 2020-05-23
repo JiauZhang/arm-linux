@@ -57,7 +57,7 @@ ENTRY(stext)
 	 * 即 r4=phys-page_offset
 	 * 所以 r8 = r4+r8 = phys-page_offset+page_offset = phys，即物理地址的起始地址
 	 */
-	add	r8, r8, r4			@ 修正页偏移(虚拟地址或链接地址)
+	add	r8, r8, r4			@ 物理地址的起始地址
 #else
 	ldr	r8, =PHYS_OFFSET	@ always constant in this case
 #endif
@@ -108,6 +108,27 @@ bl	__vet_atags
 
 ### 步骤 4
 
+当前内核镜像在内存中的布局
+```c
+// 物理内存中的布局
+       _____________________________________________
+      |          |      |                           |
+      |          |      |                           |
+      | 段描述符 | 页表 |  kernel image             |
+      |          |      |                           |
+      |__________|______|___________________________|
+0x4000_0000      0x4000_8000
+
+// 虚拟内存中的布局
+       _____________________________________________
+      |          |      |                           |
+      |          |      |                           |
+      | 段描述符 | 页表 |  kernel image             |
+      |          |      |                           |
+      |__________|______|___________________________|
+0xc000_0000      0xc000_8000
+```
+
 ```c
 #ifdef CONFIG_SMP_ON_UP
 	bl	__fixup_smp			@ 自旋锁在 SMP 和 UP 上的相关修正
@@ -146,24 +167,26 @@ bl	__vet_atags
 	|		ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
 	|
 	|		@ 传建临时的线性映射
+			@ 页表项格式：一级页表入口值[31:20]  MMUFLAGS[19:0]
 	|		adr	r0, __turn_mmu_on_loc
-	|		ldmia	r0, {r3, r5, r6}
+	|		ldmia	r0, {r3, r5, r6}@ 得到函数的物理地址
 	|		sub	r0, r0, r3			@ virt->phys offset
 	|		add	r5, r5, r0			@ phys __turn_mmu_on
 	|		add	r6, r6, r0			@ phys __turn_mmu_on_end
-	|		mov	r5, r5, lsr #SECTION_SHIFT
+	|		mov	r5, r5, lsr #SECTION_SHIFT @ 得到一级页表入口值
 	|		mov	r6, r6, lsr #SECTION_SHIFT
 	|
-	|	1:	orr	r3, r7, r5, lsl #SECTION_SHIFT	@ flags + kernel base
-	|		str	r3, [r4, r5, lsl #PMD_ORDER]	@ identity mapping
+	|	1:	orr	r3, r7, r5, lsl #SECTION_SHIFT	@ 一级段描述符
+	|		str	r3, [r4, r5, lsl #PMD_ORDER]	@ 将 r3 中存放的段描述符放入对应的物理地址中
 	|		cmp	r5, r6
-	|		addlo	r5, r5, #1			@ next section
+	|		addlo	r5, r5, #1			@ 下一个段描述符
 	|		blo	1b
 	|
 	|		@ 设置映射页表
 	|		mov	r3, pc
-	|		mov	r3, r3, lsr #SECTION_SHIFT
-	|		orr	r3, r7, r3, lsl #SECTION_SHIFT
+	|		mov	r3, r3, lsr #SECTION_SHIFT @ 得到段描述符编号
+	|		orr	r3, r7, r3, lsl #SECTION_SHIFT @ 合成段描述符
+			@ 
 	|		add	r0, r4,  #(KERNEL_START & 0xff000000) >> (SECTION_SHIFT - PMD_ORDER)
 	|		str	r3, [r0, #((KERNEL_START & 0x00f00000) >> SECTION_SHIFT) << PMD_ORDER]!
 	|		ldr	r6, =(KERNEL_END - 1)
@@ -195,4 +218,40 @@ bl	__vet_atags
 ```c
 ::arch/arm/kernel/vmlinux.ld.S
 . = PAGE_OFFSET + TEXT_OFFSET
+::arcm/arm/kernel/head.S
+/*
+ * swapper_pg_dir is the virtual address of the initial page table.
+ * We place the page tables 16K below KERNEL_RAM_VADDR.  Therefore, we must
+ * make sure that KERNEL_RAM_VADDR is correctly set.  Currently, we expect
+ * the least significant 16 bits to be 0x8000, but we could probably
+ * relax this restriction to KERNEL_RAM_VADDR >= PAGE_OFFSET + 0x4000.
+ */
+#define KERNEL_RAM_VADDR	(PAGE_OFFSET + TEXT_OFFSET)
+#if (KERNEL_RAM_VADDR & 0xffff) != 0x8000
+#error KERNEL_RAM_VADDR must start at 0xXXXX8000
+#endif
+
+#ifdef CONFIG_ARM_LPAE
+	/* LPAE requires an additional page for the PGD */
+#define PG_DIR_SIZE	0x5000
+#define PMD_ORDER	3
+#else
+#define PG_DIR_SIZE	0x4000
+#define PMD_ORDER	2
+#endif
+
+	.globl	swapper_pg_dir
+	.equ	swapper_pg_dir, KERNEL_RAM_VADDR - PG_DIR_SIZE
+
+	.macro	pgtbl, rd, phys
+	add	\rd, \phys, #TEXT_OFFSET - PG_DIR_SIZE
+	.endm
+
+#ifdef CONFIG_XIP_KERNEL
+#define KERNEL_START	XIP_VIRT_ADDR(CONFIG_XIP_PHYS_ADDR)
+#define KERNEL_END	_edata_loc
+#else
+#define KERNEL_START	KERNEL_RAM_VADDR
+#define KERNEL_END	_end
+#endif
 ```
