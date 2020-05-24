@@ -184,19 +184,35 @@ bl	__vet_atags
 	|
 	|		@ 设置映射页表
 	|		mov	r3, pc
-	|		mov	r3, r3, lsr #SECTION_SHIFT @ 得到段描述符编号
+	|		mov	r3, r3, lsr #SECTION_SHIFT @ 得到当前执行程序的段描述符编号
 	|		orr	r3, r7, r3, lsl #SECTION_SHIFT @ 合成段描述符
-			@ 
+	|		@ kernel_start=0xc000_8000, section_shift=20, pmd_order=2
+	|		@ 以下两行其实是在计算段描述符的入口地址
+			@ 因为要回写到 r0 中，因此拆分来写的
 	|		add	r0, r4,  #(KERNEL_START & 0xff000000) >> (SECTION_SHIFT - PMD_ORDER)
 	|		str	r3, [r0, #((KERNEL_START & 0x00f00000) >> SECTION_SHIFT) << PMD_ORDER]!
-	|		ldr	r6, =(KERNEL_END - 1)
-	|		add	r0, r0, #1 << PMD_ORDER
-	|		add	r6, r4, r6, lsr #(SECTION_SHIFT - PMD_ORDER)
+	|		ldr	r6, =(KERNEL_END - 1) @ 内核(包括数据段)的最后一个字节位置
+	|		add	r0, r0, #1 << PMD_ORDER @ 下一个段描述符存放的物理地址
+	|		add	r6, r4, r6, lsr #(SECTION_SHIFT - PMD_ORDER) @ 内核需要的最后一个段描述符存放的物理地址
 	|	1:	cmp	r0, r6
-	|		add	r3, r3, #1 << SECTION_SHIFT
-	|		strls	r3, [r0], #1 << PMD_ORDER
+	|		@ 内核对自身进行了线性映射，将自身物理内存所在段直接放入页表中
+	|		add	r3, r3, #1 << SECTION_SHIFT @ 下一个段描述符，只需要增加段基址即可
+	|		strls	r3, [r0], #1 << PMD_ORDER @ 写入到物理内存对应的页表中
 	|		bls	1b
-
+	|
+	|		@ 将 atags 所在段写到
+	|		mov	r0, r2, lsr #SECTION_SHIFT @ atags 段编号
+	|		movs	r0, r0, lsl #SECTION_SHIFT @ 如果 r0 为零则赋值为 r8，即没有指定 atags 的情况
+	|		moveq	r0, r8
+	|		sub	r3, r0, r8 @ 段内偏移量
+	|		add	r3, r3, #PAGE_OFFSET @ 转化成虚拟地址
+	|		add	r3, r4, r3, lsr #(SECTION_SHIFT - PMD_ORDER) @ 得到该段描述符存放的物理地址
+	|		orr	r6, r7, r0 @ 合成段描述
+	|		str	r6, [r3]   @ 写入物理内存中
+	|
+	|		mov	pc, lr
+	|		ENDPROC(__create_page_tables)
+	
 	/*
 	 * The following calls CPU specific code in a position independent
 	 * manner.  See arch/arm/mm/proc-*.S for details.  r10 = base of
@@ -204,13 +220,25 @@ bl	__vet_atags
 	 * above.  On return, the CPU will be ready for the MMU to be
 	 * turned on, and r0 will hold the CPU control register value.
 	 */
-	ldr	r13, =__mmap_switched		@ address to jump to after
-						@ mmu has been enabled
+	 /*
+	  * 以下代码流程 
+	  * 1. 设置v7核心，主要涉及SMP，MMU页表基址，I/D cache，TLB，涉及协处理的配置
+	  * --> arch/arm/mm/proc-v7.S::__v7_setup
+	  * 2. 配置MMU，设置内存访问权限，MMU页表基址，激活MMU，
+	  * --> arch/arm/kernel/head.S::__enable_mmu
+	  * 3. 将数据段复制到内存中，清理bss段，将processor ID，machine ID，atags 指针保存到指定变量中
+	  * --> arch/arm/kernel/head-common.S::__mmap_switched
+	  * 4. __mmap_switched 最后进入C语言函数start_kernel，至此终于走出了汇编代码，进入C语言的天堂
+	  * --> init/main.c::start_kernel
+	  */
+	@ 因为跳转到该函数时，MMU已激活，故这里使用的是虚拟地址，而不是物理地址
+	ldr	r13, =__mmap_switched	@ address to jump to after
+								@ mmu has been enabled
 	adr	lr, BSYM(1f)			@ return (PIC) address
-	mov	r8, r4				@ set TTBR1 to swapper_pg_dir
- ARM(	add	pc, r10, #PROCINFO_INITFUNC	)
- THUMB(	add	r12, r10, #PROCINFO_INITFUNC	)
- THUMB(	mov	pc, r12				)
+	mov	r8, r4					@ set TTBR1 to swapper_pg_dir
+	ARM(	add	pc, r10, #PROCINFO_INITFUNC	)
+	THUMB(	add	r12, r10, #PROCINFO_INITFUNC	)
+	THUMB(	mov	pc, r12				)
 1:	b	__enable_mmu
 ```
 
