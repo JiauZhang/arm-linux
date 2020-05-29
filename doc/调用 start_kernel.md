@@ -48,7 +48,7 @@ ENTRY(stext)
 	
 #ifndef CONFIG_XIP_KERNEL
 	adr	r3, 2f				@ r3=运行地址
-	ldmia	r3, {r4, r8}	@ r4=链接地址、r8=页偏移
+	ldmia	r3, {r4, r8}	@ r4=链接地址(虚拟地址)、r8=页偏移
 	sub	r4, r3, r4			@ 运行地址与链接地址间的差值
 	/*
 	 * 内核被解压到 物理地址+text_offset 处，即 0x40008000，也是当前的运行地址
@@ -77,7 +77,7 @@ ENTRY(stext)
  */
 bl	__vet_atags
 	|
-	|-->/* Returns:
+	+-->/* Returns:
 	|	 *  r2 either valid atags pointer, valid dtb pointer, or zero
 	|	 *  r5, r6 corrupted
 	|	 */
@@ -107,28 +107,27 @@ bl	__vet_atags
 ```
 
 ### 步骤 4
-
 当前内核镜像在内存中的布局
 ```c
 // 物理内存中的布局
        _____________________________________________
-      |          |      |                           |
-      |          |      |                           |
-      | 段描述符 | 页表 |  kernel image             |
-      |          |      |                           |
-      |__________|______|___________________________|
+      |      |          |                          |
+      |      |          |                          |
+      |      | 段描述符 |       kernel image       |
+      |      |          |                          |
+      |______|__________|__________________________|
 0x4000_0000      0x4000_8000
 
 // 虚拟内存中的布局
        _____________________________________________
-      |          |      |                           |
-      |          |      |                           |
-      | 段描述符 | 页表 |  kernel image             |
-      |          |      |                           |
-      |__________|______|___________________________|
+      |      |          |                          |
+      |      |          |                          |
+      |      | 段描述符 |       kernel image       |
+      |      |          |                          |
+      |______|__________|__________________________|
 0xc000_0000      0xc000_8000
 ```
-
+内核建立内核空间临时的线性映射，采用一级映射，也就是 section 模式，每个section 为 1MB.
 ```c
 #ifdef CONFIG_SMP_ON_UP
 	bl	__fixup_smp			@ 自旋锁在 SMP 和 UP 上的相关修正
@@ -140,7 +139,7 @@ bl	__vet_atags
 #endif
 	bl	__create_page_tables
 	|	
-	|-->/* r8 = phys_offset, r9 = cpuid, r10 = procinfo
+	+-->/* r8 = phys_offset, r9 = cpuid, r10 = procinfo
 	|	 *
 	|	 * Returns:
 	|	 *  r0, r3, r5-r7 corrupted
@@ -149,7 +148,7 @@ bl	__vet_atags
 	|	__create_page_tables:
 	|		pgtbl	r4, r8				@ 将页表起始物理地址放入 r4 中
 	|			|
-	|			|-->.macro	pgtbl, rd, phys
+	|			+-->.macro	pgtbl, rd, phys
 	|			|	add	\rd, \phys, #TEXT_OFFSET - PG_DIR_SIZE
 	|			|	.endm
 	|
@@ -166,8 +165,8 @@ bl	__vet_atags
 	|
 	|		ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
 	|
-	|		@ 传建临时的线性映射
-			@ 页表项格式：一级页表入口值[31:20]  MMUFLAGS[19:0]
+	|		@ 创建临时的线性映射
+	|		@ 页表项格式：一级页表入口值[31:20]  MMUFLAGS[19:0]
 	|		adr	r0, __turn_mmu_on_loc
 	|		ldmia	r0, {r3, r5, r6}@ 得到函数的物理地址
 	|		sub	r0, r0, r3			@ virt->phys offset
@@ -188,7 +187,7 @@ bl	__vet_atags
 	|		orr	r3, r7, r3, lsl #SECTION_SHIFT @ 合成段描述符
 	|		@ kernel_start=0xc000_8000, section_shift=20, pmd_order=2
 	|		@ 以下两行其实是在计算段描述符的入口地址
-			@ 因为要回写到 r0 中，因此拆分来写的
+	|		@ 因为要回写到 r0 中，因此拆分来写的
 	|		add	r0, r4,  #(KERNEL_START & 0xff000000) >> (SECTION_SHIFT - PMD_ORDER)
 	|		str	r3, [r0, #((KERNEL_START & 0x00f00000) >> SECTION_SHIFT) << PMD_ORDER]!
 	|		ldr	r6, =(KERNEL_END - 1) @ 内核(包括数据段)的最后一个字节位置
@@ -200,7 +199,7 @@ bl	__vet_atags
 	|		strls	r3, [r0], #1 << PMD_ORDER @ 写入到物理内存对应的页表中
 	|		bls	1b
 	|
-	|		@ 将 atags 所在段写到
+	|		@ 将 atags 所在段写到页表中
 	|		mov	r0, r2, lsr #SECTION_SHIFT @ atags 段编号
 	|		movs	r0, r0, lsl #SECTION_SHIFT @ 如果 r0 为零则赋值为 r8，即没有指定 atags 的情况
 	|		moveq	r0, r8
@@ -214,17 +213,15 @@ bl	__vet_atags
 	|		ENDPROC(__create_page_tables)
 	
 	/*
-	 * The following calls CPU specific code in a position independent
-	 * manner.  See arch/arm/mm/proc-*.S for details.  r10 = base of
-	 * xxx_proc_info structure selected by __lookup_processor_type
-	 * above.  On return, the CPU will be ready for the MMU to be
-	 * turned on, and r0 will hold the CPU control register value.
+	 * r10 = base of xxx_proc_info structure selected by __lookup_processor_type
+	 * On return, the CPU will be ready for the MMU to be turned on, 
+	 * r0 = CPU control register value.
 	 */
 	 /*
 	  * 以下代码流程 
-	  * 1. 设置v7核心，主要涉及SMP，MMU页表基址，I/D cache，TLB，涉及协处理的配置
+	  * 1. 设置v7核心，主要涉及SMP，准备MMU硬件配置，I/D cache，TLB，涉及协处理的配置
 	  * --> arch/arm/mm/proc-v7.S::__v7_setup
-	  * 2. 配置MMU，设置内存访问权限，MMU页表基址，激活MMU，
+	  * 2. 配置MMU，设置内存访问权限，并激活MMU
 	  * --> arch/arm/kernel/head.S::__enable_mmu
 	  * 3. 将数据段复制到内存中，清理bss段，将processor ID，machine ID，atags 指针保存到指定变量中
 	  * --> arch/arm/kernel/head-common.S::__mmap_switched
