@@ -12,3 +12,8 @@
 - [调用 start_kernel](./调用%20start_kernel.md)
 - [自旋锁原理](./自旋锁原理.md)
 - [原子性操作原理](./原子性操作原理.md)
+
+### 参考文献
+- ARM Architecture Reference Manual -- ARMv7-A and ARMv7-R edition.pdf
+- Instruction Set Assembly Guide for Armv7 and earlier Arm architectures.pdf
+- Cortex-A9 MPCore Technical Reference Manual.pdf
