@@ -17,3 +17,6 @@
 - ARM Architecture Reference Manual -- ARMv7-A and ARMv7-R edition.pdf
 - Instruction Set Assembly Guide for Armv7 and earlier Arm architectures.pdf
 - Cortex-A9 MPCore Technical Reference Manual.pdf
+- [GNU Binutils](https://www.sourceware.org/binutils/)
+- [Documentation for binutils 2.34](https://sourceware.org/binutils/docs-2.34/)
+- [ARM Machine Directives](https://sourceware.org/binutils/docs-2.34/as/ARM-Directives.html#ARM-Directives)
