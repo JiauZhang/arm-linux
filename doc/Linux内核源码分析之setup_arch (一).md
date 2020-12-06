@@ -1,6 +1,6 @@
 ### 1. 概述
 之前已经写了几篇Linux内核启动相关的文章，比如：《[解压内核镜像](http://mp.weixin.qq.com/s?__biz=MzUzNjU2OTkyOA==&mid=2247484463&idx=1&sn=1dc7706fccd141ecbdb2704d785de0d2&chksm=faf57508cd82fc1e333787dcece7f524165035422cc512313ecddb1ceb1d22b9e9605c4d8332&scene=21#wechat_redirect)》《[调用 start_kernel](http://mp.weixin.qq.com/s?__biz=MzUzNjU2OTkyOA==&mid=2247484478&idx=1&sn=8f4c367406b47c84fdd8a6674ce47100&chksm=faf57519cd82fc0f6efbeb8c7778d2f4929e73adec5c46bf7da5085aa0cb3d5717dda832d7ec&scene=21#wechat_redirect)》都是用汇编语言写的，这些代码的作用仅仅是把内核镜像放置到特定的位置，同时配置好C语言的运行环境，再有就是简单的把内核镜像所在区域的页表设置一下，在开启MMU之后就正式开始了C语言代码的执行，C语言代码的入口是start_kernel这个函数，本文要介绍其中的set_arch这个函数，该函数的作用是查找给定机器ID的数据结构信息、配置内存条信息、解析bootloader传递命令行参数，然后根据machine_desc结构体所记录的信息对机器进行一些必要的设置，最后开始正式建立完整的页表，大致流程如下图所示。
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20201122103313892.PNG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3Ffel9yX3M=,size_16,color_FFFFFF,t_70#pic_center)
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201122103313892.PNG)
 ### 2. set_processor
 该函数首先调用汇编代码来查找给定机器ID的proc_info数据，找到之后取出其中的processor结构体，该结构体中包含了很多任务切换相关的底层函数。
 
